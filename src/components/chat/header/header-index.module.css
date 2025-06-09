@@ -1,0 +1,50 @@
+/* 헤더 */
+.header {
+  width: 100%;
+  min-height: 63px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+
+  padding: 0 8px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.titleBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  cursor: default;
+}
+
+.title {
+  font-size: 16px;
+  line-height: 18px;
+}
+
+.status {
+  color: #7c7c7c;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.backBtn {
+  display: flex;
+  position: absolute;
+  left: 12px;
+}
+
+.closeBtn {
+  display: flex;
+  position: absolute;
+  right: 12px;
+}

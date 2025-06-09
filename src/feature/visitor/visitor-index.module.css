@@ -1,0 +1,23 @@
+.chat {
+  width: 300px;
+  height: 50%;
+
+  border: 1px solid #ddd;
+  border-radius: 26px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  position: fixed;
+  right: 30px;
+  bottom: 100px;
+
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (width <= 600px) {
+  .chat {
+    width: 100%;
+  }
+}

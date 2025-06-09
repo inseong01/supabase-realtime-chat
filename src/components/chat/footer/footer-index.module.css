@@ -1,0 +1,60 @@
+.footer {
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+
+  padding: 8px;
+}
+
+.inputBox {
+  height: 30px;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+
+  padding: 4px;
+}
+
+/* 입력창 */
+.input {
+  flex: 1;
+
+  background-color: transparent;
+
+  padding-left: 8px;
+}
+
+/* 전송 버튼 */
+.sendBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: white;
+  background-color: #336cb5;
+  border-radius: 16px;
+
+  padding: 4px;
+  padding-right: 12px;
+  padding-left: 14px;
+}
+
+.icon {
+  width: 20px;
+}
+
+button:disabled:hover {
+  background-color: #336cb5;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sendBtn:hover {
+    background-color: #2a5896;
+  }
+}
