@@ -1,10 +1,10 @@
-import { createContext, type Dispatch, type SetStateAction } from 'react';
+import { createContext } from 'react';
 
-import { initOpponentState, type MessageMetaData } from '../../util/const/const';
+import { initOpponentState } from '../../util/const/const';
 
-export const UserIDContextContext = createContext('');
+import { initVisitorAppState, type InitVisitorAppState } from './reducer';
 
 export const OpponentStateContext = createContext(initOpponentState);
 
-type GetMessageContext = Dispatch<SetStateAction<MessageMetaData[]>>;
-export const GetMessageContext = createContext<GetMessageContext | undefined>(undefined);
+type VisitorReducerStateContext = InitVisitorAppState;
+export const VisitorReducerStateContext = createContext<VisitorReducerStateContext>(initVisitorAppState);

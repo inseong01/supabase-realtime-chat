@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from 'react';
 
 import type { MessageMetaData } from '../../../util/const/const';
-import { UserIDContextContext } from '../../../feature/visitor/context';
+import { UserIDContextContext } from '../../../util/context/global';
 
 import styles from './body-index.module.css';
 import MessageBox from '../message-box/box-index';

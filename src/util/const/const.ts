@@ -11,24 +11,48 @@ export type MessageMetaData = {
   type: `${REALTIME_LISTEN_TYPES.BROADCAST}`;
   event: string;
   payload: {
-    text: string;
     id: string;
-    isTyping: boolean;
+    text: string;
     sent_at: string;
     receiver_id?: string;
+    isTyping: boolean;
+    isRead: boolean;
   };
 };
 
-export const initMessages: MessageMetaData[] = [
+export const initMessage: MessageMetaData = {
+  type: 'broadcast',
+  event: '',
+  payload: {
+    id: '',
+    text: 'Welcome!',
+    sent_at: '',
+    receiver_id: '',
+    isTyping: false,
+    isRead: false,
+  },
+};
+
+export const initMessagesArr: MessageMetaData[] = [
   {
     type: 'broadcast',
     event: '',
     payload: {
-      text: 'Welcome!',
       id: '',
-      isTyping: false,
+      text: 'Welcome!',
       sent_at: '',
       receiver_id: '',
+      isTyping: false,
+      isRead: false,
     },
   },
 ];
+
+export type CustomPresence = {
+  presence_ref?: string; // 서버서 임의 부여
+  userID: string;
+  online_at: string;
+  isOnline: boolean;
+  isTyping: boolean;
+  messages: MessageMetaData[];
+};

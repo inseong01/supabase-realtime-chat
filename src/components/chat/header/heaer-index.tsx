@@ -5,8 +5,9 @@ import { SetIconClickContext } from '../../../util/context/global';
 import ICON_CLOSE from './../../../assets/icon-close.svg';
 import ICON_BACK from './../../../assets/icon-back.svg';
 
+import { AdminDispatchContext } from '../../../feature/admin/context';
+
 import styles from './header-index.module.css';
-import { DispatchContext } from '../../../feature/admin/context';
 
 export default function ChatHeader({
   chatroomTitle = '환영합니다',
@@ -20,7 +21,7 @@ export default function ChatHeader({
   opponentStatus: string;
 }) {
   const setIconClick = useContext(SetIconClickContext);
-  const reducer = useContext(DispatchContext);
+  const reducer = useContext(AdminDispatchContext);
 
   /* 닫기 */
   function onClickHeaderCloseIcon() {

@@ -1,45 +1,16 @@
-import { ADMIN_ID, type MessageMetaData } from '../../util/const/const';
+import type { RealtimePresenceState } from '@supabase/supabase-js';
 
-export type PresenceType = Record<string, any>;
+import { ADMIN_ID, type MessageMetaData, type CustomPresence } from '../../util/const/const';
 
-type Message = {
-  id: MessageMetaData['payload']['id'];
-  text: MessageMetaData['payload']['text'];
-  sent_at: MessageMetaData['payload']['sent_at'];
-  isRead: boolean;
-};
-
-const initMessage: Message = {
-  id: '',
-  isRead: false,
-  sent_at: '',
-  text: '',
-};
-
-type UserMessages = {
-  [key: string]: {
-    userID: MessageMetaData['payload']['id'];
-    isTyping: MessageMetaData['payload']['isTyping'];
-    messages: Message[];
-  };
-};
-
-type SetUserStateData = {
-  id: MessageMetaData['payload']['id'];
-  isTyping: MessageMetaData['payload']['isTyping'];
-};
-
-export type InitAppState = {
+export type InitAdminAppState = {
   isRoomClicked: boolean;
-  userList: PresenceType[];
-  userMessages: UserMessages;
+  userList: { [key: string]: CustomPresence };
   selectedID: MessageMetaData['payload']['id'];
 };
 
-export const initAppState: InitAppState = {
+export const initAdminAppState: InitAdminAppState = {
   isRoomClicked: false,
-  userList: [],
-  userMessages: {},
+  userList: {},
   selectedID: '',
 };
 
@@ -54,12 +25,12 @@ interface CloseChatAction {
 
 interface AddUserListAction {
   type: 'ADD_USER_LIST';
-  list: PresenceType;
+  list: RealtimePresenceState<CustomPresence>;
   myID: string;
 }
 
 interface RemoveUserListAction {
-  type: 'REMOVE_USER_LIST';
+  type: 'UPDATE_USER_OFFLINE';
   key: string;
 }
 
@@ -70,7 +41,10 @@ interface GetMessageAction {
 
 interface SetUserMessageStateAction {
   type: 'SET_USER_MESSAGE_STATE';
-  data: SetUserStateData;
+  data: {
+    id: MessageMetaData['payload']['id'];
+    isTyping: MessageMetaData['payload']['isTyping'];
+  };
 }
 
 interface ReadUserMessageAction {
@@ -87,7 +61,7 @@ export type ActionType =
   | SetUserMessageStateAction
   | ReadUserMessageAction;
 
-export function reducer(state: InitAppState, action: ActionType) {
+export function adminReducer(state: InitAdminAppState, action: ActionType) {
   switch (action.type) {
     case 'OPEN_CHAT': {
       const selectedID = action.id;
@@ -108,70 +82,57 @@ export function reducer(state: InitAppState, action: ActionType) {
     case 'ADD_USER_LIST': {
       const onlineUsersList = action.list;
       const myID = action.myID;
+
       const filteredUserList = Object.entries(onlineUsersList)
         .filter(([key]) => key !== myID) // 본인 ID 제외
         .map(([, value]) => value[0]); // 접속 상태 값 추출 (열려있는 탭 중 첫번째 정보)
 
+      const onlineUsersObject = Object.fromEntries(filteredUserList.map((user) => [user.userID, user]));
+
       return {
         ...state,
-        userList: [...filteredUserList],
+        userList: { ...state.userList, ...onlineUsersObject },
       };
     }
-
-    case 'REMOVE_USER_LIST': {
+    case 'UPDATE_USER_OFFLINE': {
       const userID = action.key;
-      const updatedUserList = state.userList.filter((user) => user.userID !== userID);
 
       return {
         ...state,
-        userList: [...updatedUserList],
+        userList: {
+          ...state.userList,
+          [userID]: {
+            ...state.userList[userID],
+            isOnline: false,
+          },
+        },
       };
     }
     case 'GET_MESSAGE': {
       const data = action.data.payload;
       const selectedID = state.selectedID;
 
-      const id = data.id.toString();
-      const text = data.text;
-      const send_at = data.sent_at;
+      const id = data.id;
       const isTyping = data.isTyping;
-
       const isRead = selectedID === id; // 채팅방 접속 중이면
-      const messages = { ...initMessage, id, text: text, send_at: send_at, isRead };
+
+      const payload = { ...data, isRead };
+      const messages: MessageMetaData = { ...action.data, payload };
 
       /* 관리자 메시지 처리 */
-      // const isAdminMessage = id === USER_ID;
       const isAdminMessage = id === ADMIN_ID;
 
       if (isAdminMessage) {
         const receiver_id = data.receiver_id!;
-        const updatedMessageData = [...state.userMessages[receiver_id].messages, messages];
+        const updatedMessageData = [...state.userList[receiver_id].messages, messages];
 
         return {
           ...state,
-          userMessages: {
-            ...state.userMessages,
+          userList: {
+            ...state.userList,
             [receiver_id]: {
-              ...state.userMessages[receiver_id],
+              ...state.userList[receiver_id],
               messages: updatedMessageData,
-            },
-          },
-        };
-      }
-
-      /* 관리자외 메시지 처리 */
-      const isMessageDataNotExist = !state.userMessages[id];
-
-      if (isMessageDataNotExist) {
-        return {
-          ...state,
-          userMessages: {
-            ...state.userMessages,
-            [id]: {
-              ...state.userMessages[id],
-              userID: id,
-              isTyping,
-              messages: [messages],
             },
           },
         };
@@ -179,12 +140,12 @@ export function reducer(state: InitAppState, action: ActionType) {
 
       return {
         ...state,
-        userMessages: {
-          ...state.userMessages,
+        userList: {
+          ...state.userList,
           [id]: {
-            ...state.userMessages[id],
+            ...state.userList[id],
             isTyping,
-            messages: [...state.userMessages[id].messages, messages],
+            messages: [...state.userList[id].messages, messages],
           },
         },
       };
@@ -193,30 +154,12 @@ export function reducer(state: InitAppState, action: ActionType) {
       const id = action.data.id;
       const isTyping = action.data.isTyping;
 
-      /* 관리자외 메시지 처리 */
-      const isMessageDataNotExist = !state.userMessages[id];
-
-      if (isMessageDataNotExist) {
-        return {
-          ...state,
-          userMessages: {
-            ...state.userMessages,
-            [id]: {
-              userID: id,
-              isTyping,
-              messages: [],
-              isRead: false,
-            },
-          },
-        };
-      }
-
       return {
         ...state,
-        userMessages: {
-          ...state.userMessages,
+        userList: {
+          ...state.userList,
           [id]: {
-            ...state.userMessages[id],
+            ...state.userList[id],
             isTyping,
           },
         },
@@ -224,19 +167,21 @@ export function reducer(state: InitAppState, action: ActionType) {
     }
     case 'READ_USER_MESSAGE': {
       const id = action.id;
-
-      const readMessages = state.userMessages[id].messages.map((msg) => ({
-        ...msg,
-        isRead: true,
+      const readMessages = state.userList[id].messages.map((props) => ({
+        ...props,
+        payload: {
+          ...props.payload,
+          isRead: true,
+        },
       }));
 
       return {
         ...state,
-        userMessages: {
-          ...state.userMessages,
+        userList: {
+          ...state.userList,
           [id]: {
-            ...state.userMessages[id],
-            messages: readMessages,
+            ...state.userList[id],
+            messages: [...readMessages],
           },
         },
       };
