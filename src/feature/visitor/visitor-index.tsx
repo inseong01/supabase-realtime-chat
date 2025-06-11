@@ -1,9 +1,9 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 
 import { type MessageMetaData } from '../../util/const/const';
 import { UserIDContextContext } from '../../util/context/global';
 
-import { VisitorReducerStateContext } from './context';
+import { VisitorDispatchContext, VisitorReducerStateContext } from './context';
 
 import styles from './visitor-index.module.css';
 import ChatHeader from '../../components/chat/header/heaer-index';
@@ -23,7 +23,27 @@ export default function VisitorChatMode() {
 
 function ChatRoomDisplay({ messages }: { messages: MessageMetaData[] }) {
   const { adminStatus } = useContext(VisitorReducerStateContext);
+  const reducer = useContext(VisitorDispatchContext);
   const USER_ID = useContext(UserIDContextContext);
+
+  /* 윈도우 포커스 여부 */
+  useEffect(() => {
+    if (!reducer) return;
+    reducer({ type: 'READ_MESSAGE' });
+
+    function readMessagesIfVisible() {
+      if (!reducer) return;
+      if (document.visibilityState === 'visible') {
+        reducer({ type: 'READ_MESSAGE' });
+      }
+    }
+
+    window.addEventListener('visibilitychange', readMessagesIfVisible);
+
+    return () => {
+      window.removeEventListener('visibilitychange', readMessagesIfVisible);
+    };
+  }, [reducer]);
 
   const isOnline = adminStatus.isOnline;
   const isTyping = adminStatus.isTyping;

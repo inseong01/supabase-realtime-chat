@@ -62,13 +62,14 @@ function OnlineUser({ id }: { id: MessageMetaData['payload']['id'] }) {
   const reducer = useContext(AdminDispatchContext);
 
   const user = state.userList[id];
+  const isTyping = user.isTyping;
   const isOnline = user.isOnline;
   const messages = user.messages;
   const latestMessage = messages.at(-1);
 
   const name = id;
   const status = isOnline ? '온라인' : '오프라인';
-  const text = latestMessage?.payload.text ?? '둘러보는 중...';
+  const text = latestMessage?.payload.text ?? ' ';
   const sent_at = latestMessage ? getDateTime('time', new Date(latestMessage.payload.sent_at)) : '';
   const userStatusOrSentAt = isOnline ? (!latestMessage ? status : sent_at) : status;
 
@@ -96,7 +97,7 @@ function OnlineUser({ id }: { id: MessageMetaData['payload']['id'] }) {
       </div>
       <div className={styles.bottom}>
         {/* 메시지 미리보기 */}
-        <span className={styles.text}>{text}</span>
+        <span className={styles.text}>{isTyping ? '작성중..' : text}</span>
 
         {/* 안 읽은 메시지 개수 */}
         {messagesLength > 0 && <span className={styles.count}>{count}</span>}
@@ -107,6 +108,7 @@ function OnlineUser({ id }: { id: MessageMetaData['payload']['id'] }) {
 
 function ChatRoomDisplay({ ref }: { ref: RefObject<HTMLDivElement | null> }) {
   const state = useContext(AdminReducerStateContext);
+  const reducer = useContext(AdminDispatchContext);
 
   const selectedID = state.selectedID;
   const messages = state.userList[selectedID].messages;
@@ -120,6 +122,25 @@ function ChatRoomDisplay({ ref }: { ref: RefObject<HTMLDivElement | null> }) {
     const chatRoomHeight = ref.current.scrollHeight;
     ref.current.scrollTo(0, chatRoomHeight);
   }, [ref, currentChatRoomMessage, isTyping]);
+
+  /* 윈도우 포커스 여부 */
+  useEffect(() => {
+    if (!reducer) return;
+    reducer({ type: 'READ_USER_MESSAGE', id: selectedID });
+
+    function readMessagesIfVisible() {
+      if (!reducer) return;
+      if (document.visibilityState === 'visible') {
+        reducer({ type: 'READ_USER_MESSAGE', id: selectedID });
+      }
+    }
+
+    window.addEventListener('visibilitychange', readMessagesIfVisible);
+
+    return () => {
+      window.removeEventListener('visibilitychange', readMessagesIfVisible);
+    };
+  }, [reducer, selectedID]);
 
   return (
     <>

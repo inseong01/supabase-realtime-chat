@@ -75,7 +75,7 @@ export default function ChatFooter({
 
   return (
     <div className={styles.footer}>
-      <div className={styles.inputBox}>
+      <div className={`${styles.inputBox} ${!isOpponentOnline ? styles.disabled : ''}`}>
         <input
           type='text'
           className={styles.input}

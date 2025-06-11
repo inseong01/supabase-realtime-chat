@@ -1,28 +1,37 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 
 import { SetIconClickContext, UserIDContextContext } from './util/context/global';
 import { ADMIN_ID, USER_ID, type CustomPresence, type MessageMetaData } from './util/const/const';
+import { supabase } from './util/supabase/supabase-client';
 
 import { adminReducer, initAdminAppState } from './feature/admin/reducer';
 import { AdminDispatchContext, AdminReducerStateContext } from './feature/admin/context';
 import { initVisitorAppState, visitorReducer } from './feature/visitor/reducer';
-import { VisitorReducerStateContext } from './feature/visitor/context';
+import { VisitorDispatchContext, VisitorReducerStateContext } from './feature/visitor/context';
 
 import './App.css';
 import AdminChatMode from './feature/admin/admin-index';
 import VisitorChatMode from './feature/visitor/visitor-index';
 import ChattingAppIcon from './components/icon/icon-index';
-import { supabase } from './util/supabase/supabase-client';
 
+/* 
+  이름 무작위 부여, ts 지원 스크립트 작성
+*/
 function App() {
-  const [isLogin, setLogin] = useState(false);
+  const [isLogin] = useState(true);
   const [isIconClicked, setIconClick] = useState(false);
 
   const [visitorState, visitorDispatch] = useReducer(visitorReducer, initVisitorAppState);
   const [adminState, adminDispatch] = useReducer(adminReducer, initAdminAppState);
 
+  const isAppOpenedRef = useRef(isIconClicked);
+
   const localStorageID = localStorage.getItem('user_id');
   const ID = isLogin ? ADMIN_ID : localStorageID ?? USER_ID;
+
+  useEffect(() => {
+    isAppOpenedRef.current = isIconClicked;
+  }, [isIconClicked]);
 
   useEffect(() => {
     const userStatus: CustomPresence = {
@@ -50,9 +59,9 @@ function App() {
       MY_CHANNEL
         /* 데이터 송수신 */
         .on('broadcast', { event: 'send' }, (data) => {
-          console.log('data: ', data);
+          const isAppOpened = isAppOpenedRef.current;
 
-          adminDispatch({ type: 'GET_MESSAGE', data: data as MessageMetaData });
+          adminDispatch({ type: 'GET_MESSAGE', data: data as MessageMetaData, isAppOpened });
         })
         .on('broadcast', { event: 'opponent' }, (data) => {
           const id: string = data.payload.id;
@@ -94,8 +103,9 @@ function App() {
         /* 데이터 송수신 */
         .on('broadcast', { event: 'send' }, (data) => {
           const myID = ID;
+          const isAppOpened = isAppOpenedRef.current;
 
-          visitorDispatch({ type: 'GET_MESSAGE', data: data as MessageMetaData, myID });
+          visitorDispatch({ type: 'GET_MESSAGE', data: data as MessageMetaData, myID, isAppOpened });
         })
         .on('broadcast', { event: 'opponent' }, (data) => {
           const adminID = ADMIN_ID;
@@ -134,33 +144,27 @@ function App() {
     };
   }, [ID, isLogin]);
 
-  const adminReceivedMsgCount = Object.keys(adminState.userList).reduce((acc, key) => {
-    const userMessages = adminState.userList[key].messages;
-    const notReadMessages = userMessages.filter((msg) => !msg.payload.isRead && msg.payload.id !== ADMIN_ID);
-    return notReadMessages.length + acc;
+  const adminReceivedMsgCount = Object.keys(adminState.userList).reduce((acc, id) => {
+    const userMessages = adminState.userList[id].messages;
+    return acc + userMessages.filter((msg) => !msg.payload.isRead && msg.payload.id !== ADMIN_ID).length;
   }, 0);
   const visitorReceivedMsgCount = visitorState.messages.reduce((acc, msg) => {
-    const isRead = !msg.payload.isRead && msg.payload.id !== ID;
-    return isRead ? acc + 1 : acc;
+    return acc + (!msg.payload.isRead && msg.payload.id !== ID ? 1 : 0);
   }, 0);
   const msgCountMention = isLogin
     ? adminReceivedMsgCount > 0
-      ? `: 새로운 알림 ${adminReceivedMsgCount} 개`
+      ? `: 새로운 알림 ${adminReceivedMsgCount > 99 ? '99+' : adminReceivedMsgCount} 개`
       : ''
     : visitorReceivedMsgCount > 0
-    ? `: 새로운 알림 ${visitorReceivedMsgCount} 개`
+    ? `: 새로운 알림 ${visitorReceivedMsgCount > 99 ? '99+' : visitorReceivedMsgCount} 개`
     : '';
 
-  const msgCountAlertMention = isLogin ? `채팅 관리자 ${msgCountMention}` : `채팅 ${msgCountMention}`;
-
-  /*
-    알림 수신 개수 점검, 읽음 처리, 스타일링 필요
-  */
+  const msgAlertMention = isLogin ? `채팅 관리자 ${msgCountMention}` : `채팅 ${msgCountMention}`;
 
   return (
     <>
       {/* HTML title */}
-      <title>{msgCountAlertMention}</title>
+      <title>{msgAlertMention}</title>
 
       <SetIconClickContext.Provider value={setIconClick}>
         <UserIDContextContext.Provider value={ID}>
@@ -174,14 +178,16 @@ function App() {
               </AdminDispatchContext.Provider>
             ) : (
               <VisitorReducerStateContext.Provider value={visitorState}>
-                {/* 채팅방 - 방문자 */}
-                <VisitorChatMode />
+                <VisitorDispatchContext.Provider value={visitorDispatch}>
+                  {/* 채팅방 - 방문자 */}
+                  <VisitorChatMode />
+                </VisitorDispatchContext.Provider>
               </VisitorReducerStateContext.Provider>
             ))}
         </UserIDContextContext.Provider>
 
         {/* 채팅방 아이콘 */}
-        <ChattingAppIcon />
+        <ChattingAppIcon hasMsgAlert={msgCountMention.length > 0} />
       </SetIconClickContext.Provider>
     </>
   );

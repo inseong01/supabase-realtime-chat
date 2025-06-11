@@ -37,6 +37,7 @@ interface RemoveUserListAction {
 interface GetMessageAction {
   type: 'GET_MESSAGE';
   data: MessageMetaData;
+  isAppOpened: boolean;
 }
 
 interface SetUserMessageStateAction {
@@ -110,16 +111,21 @@ export function adminReducer(state: InitAdminAppState, action: ActionType) {
     }
     case 'GET_MESSAGE': {
       const data = action.data.payload;
+      const isAppOpened = action.isAppOpened;
       const selectedID = state.selectedID;
 
       const id = data.id;
       const isTyping = data.isTyping;
-      const isRead = selectedID === id; // 채팅방 접속 중이면
+
+      const isWindowVisible = document.visibilityState === 'visible';
+      const isChatVisible = isAppOpened && isWindowVisible;
+      const messageReadConditions = selectedID === id || ADMIN_ID === id; // 채팅방 접속 중이거나 본인 메시지면
+      const isRead = isChatVisible ? messageReadConditions : false;
 
       const payload = { ...data, isRead };
       const messages: MessageMetaData = { ...action.data, payload };
 
-      /* 관리자 메시지 처리 */
+      /* 관리자(본인) 메시지 처리 */
       const isAdminMessage = id === ADMIN_ID;
 
       if (isAdminMessage) {

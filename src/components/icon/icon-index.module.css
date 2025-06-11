@@ -12,7 +12,18 @@
   background-color: transparent;
 
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
 
   padding: 0;
+}
+
+.alertIcon {
+  width: 15px;
+  height: 15px;
+
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  background-color: #e83939;
+  border-radius: 50%;
 }

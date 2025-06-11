@@ -6,7 +6,7 @@ import ICON_FLOAT from './../../assets/icon-float.svg';
 
 import styles from './icon-index.module.css';
 
-export default function ChattingAppIcon() {
+export default function ChattingAppIcon({ hasMsgAlert }: { hasMsgAlert: boolean }) {
   const setIconClick = useContext(SetIconClickContext);
 
   function onClicAppIcon() {
@@ -20,6 +20,10 @@ export default function ChattingAppIcon() {
 
   return (
     <button className={styles.icon} onClick={onClicAppIcon} aria-label='채팅 아이콘'>
+      {/* 메시지 수신 표시 */}
+      {hasMsgAlert && <span className={styles.alertIcon}></span>}
+
+      {/* 위젯 아이콘 */}
       <img src={ICON_FLOAT} alt='채팅 아이콘' />
     </button>
   );

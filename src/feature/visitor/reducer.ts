@@ -19,6 +19,11 @@ interface GetMessageAction {
   type: 'GET_MESSAGE';
   data: MessageMetaData;
   myID: string;
+  isAppOpened: boolean;
+}
+
+interface ReadMessageAction {
+  type: 'READ_MESSAGE';
 }
 
 interface UpdateAdminTypingStatusAction {
@@ -35,22 +40,42 @@ interface UpdateAdminOnlineStatusAction {
   isOnline: boolean;
 }
 
-type ActionType = GetMessageAction | UpdateAdminTypingStatusAction | UpdateAdminOnlineStatusAction;
+type ActionType = GetMessageAction | ReadMessageAction | UpdateAdminTypingStatusAction | UpdateAdminOnlineStatusAction;
 
 export function visitorReducer(state: InitVisitorAppState, action: ActionType) {
   switch (action.type) {
     case 'GET_MESSAGE': {
       const MY_ID = action.myID;
-      const isMySelf = action.data.payload.id === MY_ID;
-      const isMyMessage = action.data.payload?.receiver_id === MY_ID;
+      const isAppOpened = action.isAppOpened;
+      const msgPayload = action.data.payload;
 
-      if (!(isMySelf || isMyMessage)) return state;
+      const isNotMySelf = msgPayload.id !== MY_ID;
+      const isNotMyMessage = msgPayload?.receiver_id !== MY_ID;
 
-      const message = action.data;
+      if (isNotMySelf && isNotMyMessage) return state;
+
+      const isWindowVisible = document.visibilityState === 'visible';
+      const isChatVisible = isAppOpened && isWindowVisible;
+      const messageReadConditions = msgPayload.id === MY_ID; // 본인 메시지인 경우
+      const isRead = isChatVisible ? messageReadConditions : false;
+
+      const payload = { ...msgPayload, isRead };
+      const message: MessageMetaData = { ...action.data, payload };
 
       return {
         ...state,
         messages: [...state.messages, message],
+      };
+    }
+    case 'READ_MESSAGE': {
+      const messages = state.messages;
+      const updatedMessages: MessageMetaData[] = messages.map((msg) =>
+        msg.payload.isRead ? msg : { ...msg, payload: { ...msg.payload, isRead: true } }
+      );
+
+      return {
+        ...state,
+        messages: updatedMessages,
       };
     }
     case 'UPDATE_ADMIN_TYPING_STATUS': {
