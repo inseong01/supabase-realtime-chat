@@ -56,8 +56,8 @@ export function visitorReducer(state: InitVisitorAppState, action: ActionType) {
 
       const isWindowVisible = document.visibilityState === 'visible';
       const isChatVisible = isAppOpened && isWindowVisible;
-      const messageReadConditions = msgPayload.id === MY_ID; // 본인 메시지인 경우
-      const isRead = isChatVisible ? messageReadConditions : false;
+      const messageReadConditions = isChatVisible || msgPayload.id === MY_ID; // 채팅이 보이거나 본인 메시지인 경우
+      const isRead = messageReadConditions;
 
       const payload = { ...msgPayload, isRead };
       const message: MessageMetaData = { ...action.data, payload };

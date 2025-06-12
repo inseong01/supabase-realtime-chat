@@ -67,7 +67,7 @@ function OnlineUser({ id }: { id: MessageMetaData['payload']['id'] }) {
   const messages = user.messages;
   const latestMessage = messages.at(-1);
 
-  const name = id;
+  const name = user.userName;
   const status = isOnline ? '온라인' : '오프라인';
   const text = latestMessage?.payload.text ?? ' ';
   const sent_at = latestMessage ? getDateTime('time', new Date(latestMessage.payload.sent_at)) : '';
@@ -113,7 +113,10 @@ function ChatRoomDisplay({ ref }: { ref: RefObject<HTMLDivElement | null> }) {
   const selectedID = state.selectedID;
   const messages = state.userList[selectedID].messages;
   const isTyping = state.userList[selectedID].isTyping;
+  const isOnline = state.userList[selectedID].isOnline;
+  const userName = state.userList[selectedID].userName;
   const currentChatRoomMessage = state.userList[selectedID].messages;
+  const status = isOnline ? '온라인' : '오프라인';
 
   /* 메시지 창 위치 조절 */
   useEffect(() => {
@@ -145,13 +148,13 @@ function ChatRoomDisplay({ ref }: { ref: RefObject<HTMLDivElement | null> }) {
   return (
     <>
       {/* 헤더 */}
-      <ChatHeader enableBack={true} chatroomTitle={selectedID} opponentType={`방문자`} opponentStatus={'온라인'} />
+      <ChatHeader enableBack={true} chatroomTitle={userName} opponentType={`방문자`} opponentStatus={status} />
 
       {/* 메인 */}
       <ChatBody messages={messages} isOpponentTyping={isTyping} />
 
       {/* 푸터 */}
-      <ChatFooter id={ADMIN_ID} receiver_id={selectedID} isOpponentOnline={true} />
+      <ChatFooter id={ADMIN_ID} receiver_id={selectedID} isOpponentOnline={isOnline} />
     </>
   );
 }

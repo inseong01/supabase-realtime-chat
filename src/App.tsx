@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 
 import { SetIconClickContext, UserIDContextContext } from './util/context/global';
-import { ADMIN_ID, USER_ID, type CustomPresence, type MessageMetaData } from './util/const/const';
+import { ADMIN_ID, NICK_NAME, USER_ID, type CustomPresence, type MessageMetaData } from './util/const/const';
 import { supabase } from './util/supabase/supabase-client';
 
 import { adminReducer, initAdminAppState } from './feature/admin/reducer';
@@ -17,8 +17,9 @@ import ChattingAppIcon from './components/icon/icon-index';
 /* 
   이름 무작위 부여, ts 지원 스크립트 작성
 */
+
 function App() {
-  const [isLogin] = useState(true);
+  const [isLogin] = useState(false);
   const [isIconClicked, setIconClick] = useState(false);
 
   const [visitorState, visitorDispatch] = useReducer(visitorReducer, initVisitorAppState);
@@ -27,7 +28,9 @@ function App() {
   const isAppOpenedRef = useRef(isIconClicked);
 
   const localStorageID = localStorage.getItem('user_id');
+  const localStorageNickName = localStorage.getItem('user_name');
   const ID = isLogin ? ADMIN_ID : localStorageID ?? USER_ID;
+  const NAME = isLogin ? 'ADMIN' : localStorageNickName ?? NICK_NAME;
 
   useEffect(() => {
     isAppOpenedRef.current = isIconClicked;
@@ -36,6 +39,7 @@ function App() {
   useEffect(() => {
     const userStatus: CustomPresence = {
       userID: ID,
+      userName: NAME,
       online_at: new Date().toISOString(),
       isOnline: true,
       isTyping: false,
@@ -55,6 +59,7 @@ function App() {
 
     if (isLogin) {
       localStorage.removeItem('user_id');
+      localStorage.removeItem('user_name');
 
       MY_CHANNEL
         /* 데이터 송수신 */
@@ -98,6 +103,7 @@ function App() {
         });
     } else {
       localStorage.setItem('user_id', ID);
+      localStorage.setItem('user_name', NAME);
 
       MY_CHANNEL
         /* 데이터 송수신 */
@@ -142,7 +148,7 @@ function App() {
     return () => {
       MY_CHANNEL.unsubscribe();
     };
-  }, [ID, isLogin]);
+  }, [ID, NAME, isLogin]);
 
   const adminReceivedMsgCount = Object.keys(adminState.userList).reduce((acc, id) => {
     const userMessages = adminState.userList[id].messages;
