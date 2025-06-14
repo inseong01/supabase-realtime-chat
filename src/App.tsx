@@ -14,10 +14,6 @@ import AdminChatMode from './feature/admin/admin-index';
 import VisitorChatMode from './feature/visitor/visitor-index';
 import ChattingAppIcon from './components/icon/icon-index';
 
-/* 
-  이름 무작위 부여, ts 지원 스크립트 작성
-*/
-
 function App() {
   const [isLogin] = useState(false);
   const [isIconClicked, setIconClick] = useState(false);
