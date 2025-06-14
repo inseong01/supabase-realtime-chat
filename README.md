@@ -116,25 +116,22 @@ MY_CHANNEL.send(msgData);
 
 ### 알림 수신
 
-<img src="./md/src/chat-admin-alert.png" width="60%" alt="관리자 알림 수신 방문자 화면" />
+<img src="./md/src/chat-admin-alert.png" width="100%" alt="관리자 알림 수신 방문자 화면" />
 
-<img src="./md/src/chat-visitor-alert.png" width="60%" alt="방문자 알림 수신 관리자 화면" />
+<img src="./md/src/chat-visitor-alert.png" width="100%" alt="방문자 알림 수신 관리자 화면" />
 
 ### 입력중
 
-<img src="./md/src/chat-admin-typing.png" width="60%" alt="관리자 입력중 방문자 화면" />
+<img src="./md/src/chat-admin-typing.png" width="100%" alt="관리자 입력중 방문자 화면" />
 
-<img src="./md/src/chat-visitor-typing.png" width="60%" alt="방문자 입력중 관리자 화면" />
+<img src="./md/src/chat-visitor-typing.png" width="100%" alt="방문자 입력중 관리자 화면" />
 
 ### 오프라인
 
-<img src="./md/src/chat-admin-offline.png" width="60%" alt="관리자 오프라인 상황 방문자 화면" />
+<img src="./md/src/chat-admin-offline.png" width="100%" alt="관리자 오프라인 상황 방문자 화면" />
 
-<img src="./md/src/chat-visitor-offline.png" width="60%" alt="방문자 오프라인 상황 관리자 화면" />
+<img src="./md/src/chat-visitor-offline.png" width="100%" alt="방문자 오프라인 상황 관리자 화면" />
 
 ### 시범 영상
 
-<video controls width="60%">
-  <source src="https://github.com/user-attachments/assets/9fadcdad-f9c2-47e6-88d1-ea2acfd7257f" type="video/mp4">
-  여러분의 브라우저는 HTML5 동영상을 지원하지 않습니다.
-</video>
+[영상](https://github.com/user-attachments/assets/9fadcdad-f9c2-47e6-88d1-ea2acfd7257f)
